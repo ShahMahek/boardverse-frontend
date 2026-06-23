@@ -10,6 +10,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   source?: "RAG" | "WEB" | null;
+  sourceUrls?: string[];
   loading?: boolean;
   thinkingIndex?: number;
 }
@@ -118,7 +119,11 @@ export default function ChatPage() {
             const updated = [...prev];
             const last = updated[updated.length - 1];
             if (last?.role === "assistant") {
-              updated[updated.length - 1] = { ...last, source: meta.source };
+              updated[updated.length - 1] = {
+                ...last,
+                source: meta.source,
+                sourceUrls: meta.sourceUrls,
+              };
             }
             return updated;
           });
@@ -270,7 +275,7 @@ export default function ChatPage() {
             cursor: "pointer", fontFamily: "'Poppins', sans-serif", transition: "all 0.15s",
             flexShrink: 0,
           }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-2)"; e.currentTarget.style.color = "var(--primary)"; e.currentTarget.style.borderColor = "var(--primary)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-2)"; e.currentTarget.style.color = "#EA580C"; e.currentTarget.style.borderColor = "#EA580C"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-secondary)"; e.currentTarget.style.borderColor = "var(--border-strong)"; }}
           >Logout</button>
         </div>
@@ -305,10 +310,10 @@ export default function ChatPage() {
                 {msg.role === "assistant" && (
                   <div style={{
                     width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0,
-                    background: "var(--grad-main)",
+                    background: "linear-gradient(135deg, #EA580C, #EAB308)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "12px", marginRight: "10px", marginTop: "2px",
-                    boxShadow: "0 2px 8px rgba(139,92,246,0.3)",
+                    boxShadow: "0 2px 8px rgba(234,88,12,0.3)",
                   }}>🎲</div>
                 )}
 
@@ -316,7 +321,7 @@ export default function ChatPage() {
                   <div style={{
                     padding: "11px 15px",
                     borderRadius: msg.role === "user" ? "20px 20px 6px 20px" : "20px 20px 20px 6px",
-                    background: msg.role === "user" ? "var(--grad-main)" : "var(--surface)",
+                    background: msg.role === "user" ? "linear-gradient(135deg, #EA580C, #EAB308)" : "var(--surface)",
                     border: msg.role === "assistant" ? "1.5px solid var(--border-strong)" : "none",
                     fontSize: "0.85rem", lineHeight: 1.72,
                     color: msg.role === "user" ? "white" : "var(--text-primary)",
@@ -344,6 +349,7 @@ export default function ChatPage() {
                     )}
                   </div>
 
+                  {/* Source badge + citations */}
                   {msg.role === "assistant" && msg.source && !msg.loading && (
                     <div style={{ marginTop: "5px" }}>
                       <span style={{
@@ -356,6 +362,26 @@ export default function ChatPage() {
                       }}>
                         {msg.source === "RAG" ? "🔍 Knowledge Base" : "🌐 Web Search"}
                       </span>
+
+                      {/* URL citations for web search */}
+                      {msg.source === "WEB" && msg.sourceUrls && msg.sourceUrls.length > 0 && (
+                        <div style={{ marginTop: "5px", display: "flex", flexDirection: "column", gap: "3px" }}>
+                          {msg.sourceUrls.map((url, idx) => (
+                            <a key={idx} href={url} target="_blank" rel="noopener noreferrer" style={{
+                              fontSize: "0.65rem", color: "#EA580C",
+                              textDecoration: "none", opacity: 0.8,
+                              overflow: "hidden", textOverflow: "ellipsis",
+                              whiteSpace: "nowrap", maxWidth: "400px",
+                              display: "block",
+                            }}
+                              onMouseEnter={(e) => e.currentTarget.style.textDecoration = "underline"}
+                              onMouseLeave={(e) => e.currentTarget.style.textDecoration = "none"}
+                            >
+                              🔗 {new URL(url).hostname}
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -380,7 +406,7 @@ export default function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={onKeyDown}
                 onInput={autoResize}
-                placeholder="Ask about any board game…"
+                placeholder={sending ? "Waiting for response…" : "Ask about any board game…"}
                 rows={1}
                 disabled={sending}
                 style={{
@@ -388,6 +414,7 @@ export default function ChatPage() {
                   color: "var(--text-primary)", fontSize: "0.85rem", lineHeight: 2.3,
                   resize: "none", maxHeight: "128px", overflowY: "auto",
                   fontFamily: "'Poppins', sans-serif",
+                  cursor: sending ? "not-allowed" : "text",
                 }}
               />
               <button onClick={sendMessage} disabled={!input.trim() || sending} style={{

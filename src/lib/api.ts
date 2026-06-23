@@ -49,7 +49,7 @@ export const apiChat = async (
   message: string,
   sessionId: number | null | undefined,
   onToken: (token: string) => void,
-  onMeta: (meta: { sessionId: number; source: "RAG" | "WEB" | null }) => void
+  onMeta: (meta: { sessionId: number; source: "RAG" | "WEB" | null; sourceUrls: string[] }) => void
 ): Promise<void> => {
   const t = typeof window !== "undefined" ? localStorage.getItem("bv_token") : null;
 
@@ -86,7 +86,11 @@ export const apiChat = async (
 
       try {
         const event = JSON.parse(json);
-        if (event.type === "meta") onMeta({ sessionId: event.sessionId, source: event.source });
+        if (event.type === "meta") onMeta({ 
+          sessionId: event.sessionId, 
+          source: event.source,
+          sourceUrls: event.sourceUrls || []
+        });
         else if (event.type === "token") onToken(event.token);
         else if (event.type === "error") throw new Error(event.message);
       } catch { /* skip malformed */ }
