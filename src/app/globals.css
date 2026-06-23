@@ -51,6 +51,7 @@ body {
 .markdown p:empty { display: none; }
 .markdown br { display: none; }
 .markdown > * + * { margin-top: 4px; }
+.markdown hr { margin: 6px 0; border: none; border-top: 1px solid #e5e7eb; }
 
 /* ── Animations ── */
 @keyframes floatA {
