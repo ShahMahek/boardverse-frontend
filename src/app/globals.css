@@ -49,6 +49,7 @@ body {
 .markdown h1, .markdown h2, .markdown h3 { margin: 4px 0 2px 0; font-size: 0.95rem; }
 .markdown strong { color: #431407; }
 .markdown p:empty { display: none; }
+.markdown br { display: none; }
 .markdown > * + * { margin-top: 4px; }
 
 /* ── Animations ── */
